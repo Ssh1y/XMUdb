@@ -1,0 +1,39 @@
+/* body {
+    background: url(../img/carback.jpg) no-repeat;
+    background-size:cover;font-size: 15px;
+} */
+
+.form {
+    background: rgba(255,255,255,0.9);
+    width:100%;margin:50px auto;
+}
+
+label {
+    font-family: Arial;font-size: 15px
+}
+
+input.form-control:valid{
+    background-color: mintcream;
+}
+
+input.form-control:invalid{
+    background-color: #ffeeed;
+}
+
+.fa{
+    display: inline-block;
+    top: 27px;
+    left: 6px;
+    position: relative;
+    color: #575757;
+}
+
+input[type="text"],input[type="password"],input[type="email"]{
+    padding-left:26px;
+}
+.form-title{
+    padding-top:20px;
+}
+#button{
+    padding-bottom: 50px;
+}
