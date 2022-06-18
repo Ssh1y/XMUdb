@@ -8,73 +8,11 @@
     <link rel="stylesheet" href="./static/abstract.css">
     <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <?php require('./Universal/class.php');?>
-    <?php require_once("./Universal/pre.php"); ?>
-    <?php require_once("./Universal/id2another.php"); ?>
-    <?php require_once("./Universal/RecomNote.php"); ?>
-    <?php require_once("./Universal/listinfo.php"); ?>
-    <?php require_once("./Universal/Pre_annous.php"); ?>
+    <?php require('Universal/class.php'); ?>
 </head>
 
-<body">
-    <nav class="navbar navbar-default" role="navigation">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <a class="navbar-brand" href="index.php">厦大博客</a>
-            </div>
-            <form class="navbar-form navbar-left" role="search" method="GET" action="search_result.php">
-                <div class="form-group">
-                    <input type="text" class="form-control" placeholder="搜你所想" name="Search" required>
-                </div>
-                <button type="submit" class="btn btn-default">提交</button>
-            </form>
-            <?php
-                if(!isset($_SESSION['USER'])){
-                    echo "<ul class=\"nav navbar-nav navbar-right\">";
-                    echo "<li><a href=\"sign_up.php\"><span class=\"glyphicon glyphicon-user\"></span> 注册</a></li>";
-                    echo "<li><a href=\"sign_in.php\"><span class=\"glyphicon glyphicon-log-in\"></span> 登录</a></li>";
-                    echo "</ul>";
-                }
-                elseif($_SESSION['USER'] != 'admin'){
-                    $result = $user->show_profile();
-                    $avatar = $result->avatar;
-                    echo "<ul class=\"nav navbar-nav navbar-right\">";
-                    echo "<li><img src=\"$avatar\" style=\"width:45px;border-radius: 50%;\"></li>";
-                    echo "<li class=\"dropdown\">";
-                    echo "<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">";
-                        $_SESSION['USERNAME'];
-                        echo "<span class=\"caret\"></span>";
-                    echo "</a>";
-                    echo "<ul class=\"dropdown-menu\">";
-                        echo "<li><a href=\"Perpage.php\"><i class=\"glyphicon glyphicon-user\"></i> 个人主页</a></li>";
-                        echo "<li><a href=\"showinfo.php\"><i class=\"glyphicon glyphicon-edit\"></i> 编辑资料</a></li>";
-                        echo "<li><a href=\"write.php\"><i class=\"glyphicon glyphicon-book\"></i> 写文章</a></li>";
-                        echo "<li class=\"divider\"></li>";
-                        echo "<li><a href=\"./Universal/logout.php\"><i class=\"glyphicon glyphicon-log-out\"></i> 退出登录</a></li>";
-                    echo "</ul>";
-                    echo "</li>";
-                echo "</ul>";
-                }
-                else{
-                    echo "<ul class=\"nav navbar-nav navbar-righ\">";
-                    echo "<li class=\"dropdown\">";
-                    echo "<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"#\">";
-                        echo "管理员";
-                        echo "<span class=\"caret\"></span>";
-                    echo "</a>";
-                    echo "<ul class=\"dropdown-menu\">";
-                        echo "<li><a href=\"#\">管理博客</a></li>";
-                        echo "<li><a href=\"#\">编辑公告</a></li>";
-                        echo "<li><a href=\"#\">设置投票</a></li>";
-                        echo "<li class=\"divider\"></li>";
-                        echo "<li><a href=\"./Universal/logout.php\">退出登录</a></li>";
-                    echo "</ul>";
-                echo "</li>";
-                echo "</ul>";
-                }
-            ?>
-        </div>
-    </nav>
+<body>
+    <?php require_once('static/nav.php');?>
     <div class="container">
         <div class="col-sm-9">
 
@@ -82,20 +20,19 @@
                 <li class="active">推荐文章</li>
             </ul>
             <?php
-            $Recresult = RecomNote();
-            if (mysqli_num_rows($Recresult) > 0) {
-                while ($row = $Recresult->fetch_assoc()) {
-                    echo "
-                        <a class=\"lead text-primary\" target=\"_blank\" href=\"article.php?noteid=" . $row['noteid'] . "\">
-                            " . $row['title'] . "
+            $recommended_notes = $blog->recommend_note();
+            // die(var_dump($recommended_notes));
+            foreach ($recommended_notes as $note) {
+                echo "
+                        <a class=\"lead text-primary\" target=\"_blank\" href=\"note.php?noteid=" . $note['noteid'] . "&note_owner=" . $note['userid'] . "\">
+                            " . $note['title'] . "
                         </a>
                         <p class=\"abstract\">" .
-                        mb_substr($row['content'], 0, 250, 'utf-8') . "...
+                    mb_substr($note['content'], 0, 250, 'utf-8') . "...
                         <br />
                         </p>
-                        作者：" . id2another($row['userid'], 'username') . "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp发布日期：" . $row['Ptime'] . "
+                        作者：" . $note['username'] . "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp发布日期：" . $note['created_at'] . "
                         <hr>";
-                }
             }
             ?>
         </div>
@@ -109,36 +46,36 @@
                 </div>
                 <div class="panel-body">
                     <?php
-                    $result = pre_annous();
-                    if (mysqli_num_rows($result) > 0) {
-                        while ($row = $result->fetch_assoc()) {
-                            echo "<small>发布时间：".$row['Ptime']."</small>";
-                            echo "<p>".$row['annou']."</p>";
-                            echo "<hr>";
-                        }
+                    $notices = $blog->show_announcement();
+                    foreach ($notices as $notice) {
+                        echo "<small>ADMIN&nbsp&nbsp发布时间：" . $notice['created_at'] . "</small>";
+                        echo "<p>" . $notice['content'] . "</p>";
+                        echo "<hr>";
                     }
                     ?>
                 </div>
             </div>
-            <div class="panel panel-info" id="personal_album" style="display: none;">
-                <div class="panel-heading">
-                    <h2 class="panel-title">
-                        个人相册
-                    </h2>
-                </div>
-                <div class="panel-body">
-                    <?php
-                    $result = listinfo($_SESSION['USER'], 'useralbum');
-                    if (mysqli_num_rows($result) > 0) {
-                        while ($row = $result->fetch_assoc()) {
-                            echo "<a href=\"" . $row['album'] . "\"><img src=\"" . $row['album'] . "\" class=\"img-thumbnail\" width=\"100%\"></a>";
-                        }
-                    }
-                    ?>
-                </div>
-            </div>
+            <?php
+            if (isset($_SESSION['USER'])) {
+                echo "<div class=\"panel panel-info\">";
+                echo "<div class=\"panel-heading\">";
+                echo "<h2 class=\"panel-title\">";
+                echo "个人相册";
+                echo "</h2>";
+                echo "</div>";
+                echo "<div class=\"panel-body\">";
+
+                $photos = $blog->show_album($_SESSION['USER']);
+                foreach ($photos as $photo) {
+                    echo "<a href=\"" . $photo['position'] . "\"><img src=\"" . $photo['position'] . "\" class=\"img-thumbnail\" width=\"100%\"></a>";
+                }
+
+                echo "</div>";
+                echo "</div>";
+            }
+            ?>
         </div>
     </div>
-    </body>
+</body>
 
 </html>

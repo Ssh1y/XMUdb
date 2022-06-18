@@ -21,12 +21,15 @@ CREATE TABLE IF NOT EXISTS `note` (
   `userid` int(11) NOT NULL,
   `created_at` datetime NOT NULL,
   `wordcount`  int(11) NOT NULL,
+  `comment_count` int(11) DEFAULT 0,
+  `like_count` int(11) DEFAULT 0,
   PRIMARY KEY (`noteid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `comment` (
   `commentid` int(11) NOT NULL AUTO_INCREMENT,
   `noteid` int(11) NOT NULL,
+  `note_owner` int(11) NOT NULL,
   `userid` int(11) NOT NULL,
   `content` text NOT NULL,
   `created_at` datetime NOT NULL,
@@ -36,15 +39,17 @@ CREATE TABLE IF NOT EXISTS `comment` (
 CREATE TABLE IF NOT EXISTS `like` (
   `likeid` int(11) NOT NULL AUTO_INCREMENT,
   `noteid` int(11) NOT NULL,
+  `note_owner` int(11) NOT NULL,
   `userid` int(11) NOT NULL,
   `created_at` datetime NOT NULL,
   PRIMARY KEY (`likeid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS `album` (
-  `albumid` int(11) NOT NULL AUTO_INCREMENT,
+  `photoid` int(11) NOT NULL AUTO_INCREMENT,
   `userid` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `postion` varchar(255) NOT NULL,
   `created_at` datetime NOT NULL,
   PRIMARY KEY (`albumid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -64,6 +69,7 @@ ALTER TABLE `note`
 ALTER TABLE `comment`
   ADD CONSTRAINT `comment_ibfk_1` FOREIGN KEY (`noteid`) REFERENCES `note` (`noteid`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `comment_ibfk_2` FOREIGN KEY (`userid`) REFERENCES `userinfo` (`userid`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `comment_ibfk_3` FOREIGN KEY (`note_owner`) REFERENCES `blog`.`userinfo` (`userid`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `like`
   ADD CONSTRAINT `like_ibfk_1` FOREIGN KEY (`noteid`) REFERENCES `note` (`noteid`) ON DELETE CASCADE ON UPDATE CASCADE,

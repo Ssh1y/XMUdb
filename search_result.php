@@ -1,3 +1,12 @@
+<?php
+require('Universal/class.php');
+
+//接收表单通过GET传递的数据
+$search = $_GET['Search'];
+$notes = $blog->search_note($search);
+$photos = $blog->search_album($search);
+$notices = $blog->search_announcement($search);
+?>
 <!DOCTYPE html>
 <html>
 
@@ -8,138 +17,88 @@
     <link rel="stylesheet" href="./static/abstract.css">
     <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
-    <?php require_once("./Universal/pre.php"); ?>
-    <?php require_once("./Universal/id2another.php"); ?>
-    <?php require_once("./Universal/Help_search.php") ?>
 </head>
 
 <body>
-<nav class="navbar navbar-default" role="navigation">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <a class="navbar-brand" href="index.php">厦大博客</a>
-            </div>
-            <form class="navbar-form navbar-left" role="search" method="GET" action="search_result.php">
-                <div class="form-group">
-                    <input type="text" class="form-control" placeholder="搜你所想" name="Search" required>
-                </div>
-                <button type="submit" class="btn btn-default">提交</button>
-            </form>
-            <ul class="nav navbar-nav navbar-right" id="noSigned">
-                <li><a href="sign_up.html"><span class="glyphicon glyphicon-user"></span> 注册</a></li>
-                <li><a href="sign_in.html"><span class="glyphicon glyphicon-log-in"></span> 登录</a></li>
-            </ul>
-            <ul class="nav navbar-nav navbar-right" id="Signed" style="display: none;">
-                <li><img src="<?php echo id2another($_SESSION['USER'],'avatar')?>" style="width:45px;border-radius: 50%;"></li>
-                <li class="dropdown">
-                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                        <?php echo id2another($_SESSION['USER'],'username'); ?>
-                        <span class="caret"></span>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a href="Perpage.php"><i class="glyphicon glyphicon-user"></i> 个人主页</a></li>
-                        <li><a href="showinfo.php"><i class="glyphicon glyphicon-edit"></i> 编辑资料</a></li>
-                        <li><a href="#"><i class="glyphicon glyphicon-book"></i> 写文章</a></li>
-                        <li class="divider"></li>
-                        <li><a href="./Universal/logout.php"><i class="glyphicon glyphicon-log-out"></i> 退出登录</a></li>
-                    </ul>
-                </li>
-            </ul>
-            <ul class="nav navbar-nav navbar-right" id="admin" style="display: none;">
-                <li class="dropdown">
-                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                        ADMIN
-                        <span class="caret"></span>
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#">管理博客</a></li>
-                        <li><a href="#">编辑公告</a></li>
-                        <li><a href="#">设置投票</a></li>
-                        <li class="divider"></li>
-                        <li><a href="./Universal/logout.php">退出登录</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-    </nav>
+    <?php require_once("static/nav.php"); ?>
     <div class="container">
         <div class="col-sm-4">
-            <?php $obj = $_GET['Search'];?>
             <ul class="nav nav-pills nav-stacked">
-                <li id="title"><a href="search_result.php?Search=<?php echo $obj; ?>&target=title"><span class="glyphicon glyphicon-book"></span> 搜文章</a></li>
-                <li id="annou"><a href="search_result.php?Search=<?php echo $obj; ?>&target=annou"><span class="glyphicon glyphicon-bullhorn"></span> 搜公告</a></li>
-                <li id="album"><a href="search_result.php?Search=<?php echo $obj; ?>&target=alt"><span class="glyphicon glyphicon-picture"></span> 搜相册</a></li>
+                <li id="title"><a href="search_result.php?type=1&Search=<?php echo $search;?>"><span class="glyphicon glyphicon-book"></span> 搜文章</a></li>
+                <li id="annou"><a href="search_result.php?type=2&Search=<?php echo $search;?>"><span class="glyphicon glyphicon-bullhorn"></span> 搜公告</a></li>
+                <li id="album"><a href="search_result.php?type=3&Search=<?php echo $search;?>"><span class="glyphicon glyphicon-picture"></span> 搜相册</a></li>
             </ul>
         </div>
         <div class="col-sm-8">
-            <h2>"<?php echo $obj;?>"&nbspの搜索结果</h2>
-            <hr >
-            <?php $obj = $_GET['Search'];
-            if ($_GET['target'] == "") {
-                $target = "title";
-            } else {
-                $target = $_GET['target'];
-            };
-            if($target == "title"){         //查文章
-                $table = "noteuser";
-                if ($obj != "") {
-                    $result = fuzzy_search($obj, $table, $target);
-                    if (mysqli_num_rows($result) == 0) {
-                        echo "哇哦，没有搜到你想要的...";
-                    } else {
-                        while ($row = $result->fetch_assoc()) {
-                            echo "
-                                <a class=\"lead text-primary\" target=\"_blank\" href=\"article.php?noteid=" . $row['noteid'] . "\">
-                                    " . $row['title'] . "
+            <h2>"<?php echo $search; ?>"&nbspの搜索结果</h2>
+            <hr>
+            <?php if ($_GET['type'] == 1) { //查找文章 
+                if (count($notes) == 0) {
+                    echo "<h3>没有找到相关文章</h3>";
+                } else {
+                    foreach ($notes as $note) {
+                        echo "
+                                <a class=\"lead text-primary\" target=\"_blank\" href=\"note.php?noteid=" . $note['noteid'] . "&note_owner=" . $note['userid'] . "\">
+                                    " . $note['title'] . "
                                 </a>
                                 <p class=\"abstract\">" .
-                                    mb_substr($row['content'], 0, 250, 'utf-8') . "...
-                                    <br />
+                            mb_substr($note['content'], 0, 250, 'utf-8') . "...
+                                <br />
                                 </p>
-                                作者：".id2another($row['userid'],'username')."&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp发布日期：".$row['Ptime']."
+                                作者：" . $note['username'] . "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp发布日期：" . $note['created_at'] . "
                                 <hr>";
-                        }
                     }
                 }
-            }
-            if($target == "annou"){         //查公告
-                $table = "annous";
-                if($obj != ""){
-                    $result = fuzzy_search($obj, $table, $target);
-                    if (mysqli_num_rows($result) == 0) {
-                        echo "哇哦，没有搜到你想要的...";
-                    } else {
-                        while ($row = $result->fetch_assoc()) {
-                            echo "
-                                <h3 class=\"lead text-info\">
-                                    " . $row['annou_title'] . "
-                                </h3>
-                                <p>" .
-                                    $row['annou'] . "
+            } else if ($_GET['type'] == 2) { //查找公告
+                if (count($notices) == 0) {
+                    echo "<h3>没有找到相关公告</h3>";
+                } else {
+                    foreach ($notices as $notice) {
+                        echo "
+                                <a class=\"lead text-primary\" target=\"_blank\" href=\"notice.php?noticeid=" . $notice['noticeid'] . "&notice_owner=" . $notice['userid'] . "\">
+                                    " . $notice['title'] . "
+                                </a>
+                                <p class=\"abstract\">" .
+                            mb_substr($notice['content'], 0, 250, 'utf-8') . "...
+                                <br />
                                 </p>
+                                作者：" . $notice['username'] . "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp发布日期：" . $notice['created_at'] . "
                                 <hr>";
-                        }
                     }
                 }
-            }
-            if($target == "alt"){
-                $table = "useralbum";
-                if($obj != ""){
-                    $result = fuzzy_search($obj, $table, $target);
-                    if (mysqli_num_rows($result) == 0) {
-                        echo "哇哦，没有搜到你想要的...";
-                    } else {
-                        while ($row = $result->fetch_assoc()) {
-                            echo "<a href=\"" . $row['album'] . "\"><img src=\"" . $row['album'] . "\" class=\"img-thumbnail\" width=\"30%\"></a>";
-                        }
+            } else if ($_GET['type'] == 3) { //查找相册
+                if (count($photos) == 0) {
+                    echo "<h3>没有找到相关相册</h3>";
+                } else {
+                    foreach ($photos as $photo) {
+                        echo "
+                                <a class=\"lead text-primary\" target=\"_blank\" href=\"album.php?albumid=" . $photo['albumid'] . "&album_owner=" . $photo['userid'] . "\">
+                                    " . $photo['title'] . "
+                                </a>
+                                <p class=\"abstract\">" .
+                            mb_substr($photo['content'], 0, 250, 'utf-8') . "...
+                                <br />
+                                </p>
+                                作者：" . $photo['username'] . "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp发布日期：" . $photo['created_at'] . "
+                                <hr>";
                     }
                 }
-            }
-            ?>
+            } ?>
         </div>
     </div>
     <script type="text/javascript">
-        $("#<?php if ($_GET['target'] == "") { echo "note"; } else {echo $_GET['target'];}; ?>").attr("class", "active"); //js不支持换行，但是php支持，所以用格式化之后会报错，不要格式化谢谢。
+        //按照type设置class
+        var type = <?php echo $_GET['type']; ?>;
+        var title = document.getElementById("title");
+        var annou = document.getElementById("annou");
+        var album = document.getElementById("album");
+        if (type == 1) {
+            title.className = "active";
+        } else if (type == 2) {
+            annou.className = "active";
+        } else if (type == 3) {
+            album.className = "active";
+        }
     </script>
 </body>
 
