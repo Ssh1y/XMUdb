@@ -1,5 +1,5 @@
 <?php
-require('config/config.php');
+require(__DIR__ . '/../config/config.php');
 
 class blog extends mysql
 {
@@ -18,7 +18,7 @@ class blog extends mysql
         // die($sql);
         $result = mysqli_query($this->link, $sql);
         $notes = array();
-        while ($row = mysqli_fetch_assoc($result)) {
+        while ($result && $row = mysqli_fetch_assoc($result)) {
             $notes[] = $row;
         }
         return $notes;
@@ -35,6 +35,32 @@ class blog extends mysql
             $announcements[] = $row;
         }
         return $announcements;
+    }
+
+    //显示正在进行的投票
+    public function show_vote()
+    {
+        $this->table = 'vote';
+        $now = date('Y-m-d H:i:s');
+        $sql = "SELECT voteid, title FROM $this->table WHERE start_time <= '$now' AND end_time >= '$now' ORDER BY start_time DESC";
+        // echo $sql;
+        $result = mysqli_query($this->link, $sql);
+        // 按照voteid找到对应的option
+        $votes = array();
+        while ($row = mysqli_fetch_assoc($result)) {
+            $voteid = $row['voteid'];
+            $this->table = 'options';
+            $sql = "SELECT o_option, vcount FROM $this->table WHERE voteid = $voteid";
+            $result2 = mysqli_query($this->link, $sql);
+            
+            $options = array();
+            while ($row2 = mysqli_fetch_assoc($result2)) {
+                $options[] = $row2;
+            }
+            $row['options'] = $options;
+            $votes[] = $row;
+        }
+        return $votes;
     }
 
     //搜索文章
@@ -159,6 +185,10 @@ class user extends mysql
         if ($result && $result->passwd === md5($password)) {
             $_SESSION['USER'] = $result->userid;
             $_SESSION['USERNAME'] = $result->username;
+            // 判断是否是管理员
+            if ($result->username === '陈伟鸿' || $result->username === '曹恒毅') {
+                $_SESSION['IS_ADMIN'] = true;
+            }
             return true;
         } else {
             return false;
@@ -464,8 +494,9 @@ class mysql
     {
         $sql = "SELECT $ret FROM $table WHERE $where";
         // echo $sql;
+        // die(var_dump($this->link));
         $result = mysqli_query($this->link, $sql);
-        // var_dump($result->fetch_row());
+        // die(var_dump($result->fetch_row()));
         if (!$result) {
             die("Query failed: " . mysqli_error($this->link));
         }
@@ -477,7 +508,6 @@ class mysql
         $key = implode(',', $key_list);
         $value = '\'' . implode('\',\'', $value_list) . '\'';
         $sql = "INSERT INTO $table ($key) VALUES ($value)";
-        // die($sql);
         $result = mysqli_query($this->link, $sql);
         if (!$result) {
             die("Query failed: " . mysqli_error($this->link));

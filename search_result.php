@@ -55,7 +55,7 @@ $notices = $blog->search_announcement($search);
                 } else {
                     foreach ($notices as $notice) {
                         echo "
-                                <a class=\"lead text-primary\" target=\"_blank\" href=\"notice.php?noticeid=" . $notice['noticeid'] . "&notice_owner=" . $notice['userid'] . "\">
+                                <a class=\"lead text-primary\">
                                     " . $notice['title'] . "
                                 </a>
                                 <p class=\"abstract\">" .
@@ -72,7 +72,7 @@ $notices = $blog->search_announcement($search);
                 } else {
                     foreach ($photos as $photo) {
                         echo "
-                                <a class=\"lead text-primary\" target=\"_blank\" href=\"album.php?albumid=" . $photo['albumid'] . "&album_owner=" . $photo['userid'] . "\">
+                                <a class=\"lead text-primary\">
                                     " . $photo['title'] . "
                                 </a>
                                 <p class=\"abstract\">" .

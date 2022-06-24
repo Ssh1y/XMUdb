@@ -34,9 +34,9 @@ if ($commentary) {
             <h2><?php echo $note['title']; ?></h2>
             <div class="notebody">
                 <?php
-                $sentences = (explode("。", $note['content']));
+                $sentences = (explode('\r', $note['content']));
                 for ($index = 0; $index < sizeof($sentences) - 1; $index++) {
-                    echo "<p>" . $sentences[$index] . "。</p>";
+                    echo "<p>" . $sentences[$index] . "</p>";
                 }
                 echo "<p>" . $sentences[$index] . "</p>";
                 ?>

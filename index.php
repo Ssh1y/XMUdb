@@ -12,7 +12,7 @@
 </head>
 
 <body>
-    <?php require_once('static/nav.php');?>
+    <?php require_once('static/nav.php'); ?>
     <div class="container">
         <div class="col-sm-9">
 
@@ -51,6 +51,47 @@
                         echo "<small>ADMIN&nbsp&nbsp发布时间：" . $notice['created_at'] . "</small>";
                         echo "<p>" . $notice['content'] . "</p>";
                         echo "<hr>";
+                    }
+                    ?>
+                </div>
+            </div>
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        投票
+                    </h2>
+                </div>
+                <div class="panel-body">
+                    <!-- 实现html投票界面-->
+                    <?php
+                    $votes = $blog->show_vote();
+                    // 这边有点小问题，懒得修了
+                    foreach ($votes as $vote) {
+                        $options = $vote['options'];
+                        echo "<div class=\"panel panel-default\">";
+                        echo "<div class=\"panel-heading\">";
+                        echo "<h4 class=\"panel-title\">";
+                        echo "<a data-toggle=\"collapse\" data-parent=\"#accordion\" href=\"#collapse" . $vote['voteid'] . "\">";
+                        echo $vote['title'];
+                        echo "</a>";
+                        echo "</h4>";
+                        echo "</div>";
+                        echo "<div id=\"collapse" . $vote['voteid'] . "\" class=\"panel-collapse collapse in\">";
+                        echo "<div class=\"panel-body\">";
+                        foreach ($options as $option) {
+                            echo "<div id=\"dig_up\" class=\"well well-sm\">";
+                            echo "<div class=\"row\">";
+                            echo "<div class=\"col-sm-8\">";
+                            echo "<h4>" . $option['o_option'] . "</h4>";
+                            echo "</div>";
+                            echo "<div class=\"col-sm-4\">";
+                            echo "<h4>" . $option['o_count'] . "</h4>";
+                            echo "</div>";
+                            echo "</div>";
+                            echo "</div>";
+                        }
+                        echo "</div>";
+                        echo "</div>";
                     }
                     ?>
                 </div>

@@ -15,3 +15,5 @@ foreach ($arr as $value) {
 }
 $mysqli->close();
 $mysqli = null;
+
+header('Location: index.php');
